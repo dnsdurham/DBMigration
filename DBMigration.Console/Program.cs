@@ -64,9 +64,10 @@ namespace DBMigration.ConsoleApp
             // Step 1: Insert Upgrade Scripts from TFS
             if (stepSuccess == true)
             {
+                stepSuccess = false; // reset the step success flag
                 Console.WriteLine("Step 1: Insert Upgrade Scripts from TFS");
                 try 
-	            {	        
+                {	        
                     // get the directories
                     string[] upgradeFolders = System.IO.Directory.GetDirectories(upgradePath, "*", System.IO.SearchOption.TopDirectoryOnly);
                     //load the directories into a sorted list
@@ -80,30 +81,76 @@ namespace DBMigration.ConsoleApp
                         {
                             sortedFolders.Add(dirId, dir);
                         }
+
                     }
-                    stepSuccess = true;
-	            }
-	            catch (Exception ex)
-	            {
+
+                    if (sortedFolders.Count > 0)
+                    {
+                        // 1- loop through each of the folders
+                        // 2 - read the files
+                        // 3 - insert into the upgrade_commands table
+                        foreach (var folder in sortedFolders.Values)
+                        {
+                            
+
+                            // get files from a directory
+                            string[] files = Directory.GetFiles(folder);
+                            // ensure the files are in sorted order
+                            Array.Sort(files);
+                            // sort the array to ensure this occurs in order
+                            foreach (string file in files) 
+                            {
+                                Console.WriteLine(file);
+                            }
+
+                        }
+                        stepSuccess = true;
+                    }
+
+                }
+                catch (Exception ex)
+                {
                     //TODO: implement desired error handling
                     Trace.WriteLine("Step 1 Error: " + ex.Message);
                     Console.WriteLine("Step 1 Error: " + ex.Message);
                     stepSuccess = false;
-	            }
+                }
 
             }
 
             
             // Step 2: Prepare for the Export
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+            }
 
             // Step 3: Create the Export
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+            }
 
             // Step 4: Importing the export
-            // move the export file to the appropriate directory
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+                // move the export file to the appropriate directory
+            }
 
             // Step 5: Running the upgrade
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+                // move the export file to the appropriate directory
+            }
 
             // Step 6: Running the finalize
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+                // move the export file to the appropriate directory
+            }
 
             Console.WriteLine("Hit enter key to end.");
             Console.ReadLine();
