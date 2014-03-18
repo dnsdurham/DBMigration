@@ -13,6 +13,7 @@ namespace DBMigration.ConsoleApp
         static void Main(string[] args)
         {
             //TODO: build in command line parameter logic for enabling console options and runnin unattended
+            //TODO: refactor this into subroutines for ease of maintenance and readability
  
             string sourcePath = ConfigurationManager.AppSettings["SourcePath"];
             string upgradePath = "";
