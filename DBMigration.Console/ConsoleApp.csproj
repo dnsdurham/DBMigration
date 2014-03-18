@@ -8,8 +8,8 @@
     <ProjectGuid>{82675E77-32BB-46C0-A7C9-E7C29518CB76}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>DBMigration.Console</RootNamespace>
-    <AssemblyName>DBMigration.Console</AssemblyName>
+    <RootNamespace>DBMigration.ConsoleApp</RootNamespace>
+    <AssemblyName>DBMigration.ConsoleApp</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <TargetFrameworkProfile>
     </TargetFrameworkProfile>

@@ -1,0 +1,3 @@
+poop = blah
+this is a bad line
+blah=poop
