@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.30110.0
-MinimumVisualStudioVersion = 10.0.40219.1
+# Visual Studio 2010
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp", "DBMigration.Console\ConsoleApp.csproj", "{82675E77-32BB-46C0-A7C9-E7C29518CB76}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleCmdLineApp", "SampleCmdLineApp\SampleCmdLineApp.csproj", "{228D9449-C277-478D-92AE-2EBEEDC68B87}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +15,10 @@ Global
 		{82675E77-32BB-46C0-A7C9-E7C29518CB76}.Debug|x86.Build.0 = Debug|x86
 		{82675E77-32BB-46C0-A7C9-E7C29518CB76}.Release|x86.ActiveCfg = Release|x86
 		{82675E77-32BB-46C0-A7C9-E7C29518CB76}.Release|x86.Build.0 = Release|x86
+		{228D9449-C277-478D-92AE-2EBEEDC68B87}.Debug|x86.ActiveCfg = Debug|x86
+		{228D9449-C277-478D-92AE-2EBEEDC68B87}.Debug|x86.Build.0 = Debug|x86
+		{228D9449-C277-478D-92AE-2EBEEDC68B87}.Release|x86.ActiveCfg = Release|x86
+		{228D9449-C277-478D-92AE-2EBEEDC68B87}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
