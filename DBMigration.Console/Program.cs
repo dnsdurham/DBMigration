@@ -34,7 +34,6 @@ namespace DBMigration.ConsoleApp
                 stepSuccess = InsertUpgradeScripts();
             }
 
-            
             // Step 2: Prepare for the Export
             if (stepSuccess == true)
             {
@@ -44,6 +43,8 @@ namespace DBMigration.ConsoleApp
             // Step 3: Create the Export
             if (stepSuccess == true)
             {
+                Console.WriteLine(CmdLineWrapper.RunCmdLine("blah=poop poop=blah"));
+
                 stepSuccess = false; // reset the step success
             }
 
