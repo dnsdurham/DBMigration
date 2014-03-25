@@ -18,7 +18,7 @@ namespace DBMigration.ConsoleApp
 
         static void Main(string[] args)
         {
-            //TODO: build in command line parameter logic for enabling console options and runnin unattended
+            //TODO: build in command line parameter logic for enabling console options and running unattended
             //TODO: refactor this into subroutines for ease of maintenance and readability
  
             bool stepSuccess = false;
