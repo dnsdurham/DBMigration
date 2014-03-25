@@ -6,6 +6,7 @@ using System.Configuration;
 using System.IO;
 using System.Diagnostics;
 using Oracle.DataAccess.Client;
+using System.Data;
 
 namespace DBMigration.ConsoleApp
 {
@@ -119,19 +120,22 @@ namespace DBMigration.ConsoleApp
         private static bool InsertUpgradeScripts()
         {
             bool result = false;
+            OracleConnection conn = new OracleConnection(connString);
 
             try
             {
+                // update the utility package used for script inserts
+                //TODO: add the logic to load this script from the config folder and execute on the target database
+
                 // prepare the upgrade command table
                 //TODO: ensure it is correct to truncate these tables prior to inserting new commands
-                OracleConnection conn = new OracleConnection(connString);
                 conn.Open();
                 using (OracleCommand truncateCmd = new OracleCommand("truncate table rt_upgrade_command", conn))
                 {
                     truncateCmd.ExecuteNonQuery();
                 }
                 conn.Close();
-                
+
                 // get the directories
                 string[] upgradeFolders = System.IO.Directory.GetDirectories(upgradePath, "*", System.IO.SearchOption.TopDirectoryOnly);
                 //load the directories into a sorted list
@@ -153,6 +157,10 @@ namespace DBMigration.ConsoleApp
                     // 1- loop through each of the folders
                     // 2 - read the files
                     // 3 - insert into the upgrade_commands table
+
+                    // open the db connection once for all inserts
+                    conn.Open();
+
                     foreach (var folder in sortedFolders.Values)
                     {
                         // get files from a directory
@@ -162,11 +170,39 @@ namespace DBMigration.ConsoleApp
                         // sort the array to ensure this occurs in order
                         foreach (string fileName in files)
                         {
-                            // get the contents of the script and insert into the upgrade commands table
+                            // get the contents of the script 
                             StreamReader file = new StreamReader(fileName);
                             string script = file.ReadToEnd();
-                        }
+                            // insert into the upgrade commands table
+                            using (OracleCommand cmd = new OracleCommand("upgrade_exp_prep.add_upgrade_command", conn))
+                            {
+                                cmd.CommandType = CommandType.StoredProcedure;
 
+                                //procedure add_upgrade_command
+                                //(i_upg_id          integer,
+                                //i_execution_order  integer,
+                                //i_final_ind        char,
+                                //i_retry_type       integer,
+                                //i_section          integer,
+                                //i_preview          varchar2,
+                                //i_upg_command      clob,
+                                //i_success_ind      char);
+
+                                // add the parameters
+                                // TODO: will need to figure out what the appropriate settings are for each script in the upgrade_commands table
+                                cmd.Parameters.Add("@i_upg_id", OracleDbType.Int16, 1, ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_execution_order", OracleDbType.Int16, 100, ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_final_ind", OracleDbType.Char, 1, "N", ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_retry_type", OracleDbType.Int16, 1, ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_section", OracleDbType.Int16, 1, ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_preview", OracleDbType.Varchar2, 90, script.Substring(0,80), ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_upg_command", OracleDbType.Clob, script, ParameterDirection.Input);
+                                cmd.Parameters.Add("@i_success_ind", OracleDbType.Char, 1, "N", ParameterDirection.Input);
+
+                                //execute
+                                cmd.ExecuteNonQuery();
+                            }
+                        }
                     }
                     result = true;
                 }
@@ -178,6 +214,12 @@ namespace DBMigration.ConsoleApp
                 Trace.WriteLine("Step 1 Error: " + ex.Message);
                 Console.WriteLine("Step 1 Error: " + ex.Message);
                 result = false;
+            }
+            finally
+            {
+                // close the connection
+                if (conn.State != ConnectionState.Closed)
+                    conn.Close();
             }
             return result;
         }
