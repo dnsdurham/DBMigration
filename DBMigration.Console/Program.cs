@@ -26,49 +26,92 @@ namespace DBMigration.ConsoleApp
 
             // Step 0: Read in the params.txt file
             Console.WriteLine("Step 0: Read in the params.txt file");
+            Trace.WriteLine("Step 0: Read in the params.txt file");
             stepSuccess = LoadParameters();
 
-            // Step 1: Insert Upgrade Scripts from TFS
-            if (stepSuccess == true)
-            {
-                Console.WriteLine("Step 1: Insert Upgrade Scripts from TFS");
-                stepSuccess = InsertUpgradeScripts();
-            }
+            #region Prepare for Export
 
-            // Step 2: Prepare for the Export
+            // Step 1a: Upsert the version tables in the database
             if (stepSuccess == true)
             {
                 stepSuccess = false; // reset the step success
+
+                stepSuccess = true; // replace with method call
             }
 
-            // Step 3: Create the Export
+            // Step 1b: Update the upgrade_host_script table
+            // not sure how mant of these will be used with this new automation
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+
+                stepSuccess = true; // replace with method call
+            }
+
+            // Step 1c: Update the upgrade db objects in the database
+            if (stepSuccess == true)
+            {
+                Console.WriteLine("Step 1c: Update the upgrade db objects in the database");
+                Trace.WriteLine("Step 1c: Update the upgrade db objects in the database");
+                stepSuccess = false; // reset the step success
+                stepSuccess = UpdateUpgradeObjects();
+            }
+
+            // Step 1d: Insert Upgrade Commands from TFS
+            if (stepSuccess == true)
+            {
+                Console.WriteLine("Step 1d: Insert Upgrade Commands from TFS");
+                Trace.WriteLine("Step 1d: Insert Upgrade Commands from TFS");
+                stepSuccess = false; // reset the step success
+                stepSuccess = InsertUpgradeCommands();
+            }
+
+            // Step 1e: Prepare the CLR assemblies
+            if (stepSuccess == true)
+            {
+                stepSuccess = false; // reset the step success
+
+                stepSuccess = true; // replace with method call
+            }
+
+            #endregion
+
+            #region Create the Export
+            
+            // Step 2: Create the Export
             if (stepSuccess == true)
             {
                 Console.WriteLine(CmdLineWrapper.RunCmdLine("blah=poop poop=blah"));
-
+                Trace.WriteLine("Step 2: Create the export");
                 stepSuccess = false; // reset the step success
             }
 
-            // Step 4: Importing the export
+            #endregion
+
+            #region Run the Upgrade
+            
+            // Step 3: Importing the export
             if (stepSuccess == true)
             {
                 stepSuccess = false; // reset the step success
                 // move the export file to the appropriate directory
             }
 
-            // Step 5: Running the upgrade
+            // Step 4: Running the upgrade
             if (stepSuccess == true)
             {
                 stepSuccess = false; // reset the step success
                 // move the export file to the appropriate directory
             }
 
-            // Step 6: Running the finalize
+            // Step 5: Running the finalize
             if (stepSuccess == true)
             {
                 stepSuccess = false; // reset the step success
                 // move the export file to the appropriate directory
             }
+
+            #endregion
 
             Console.WriteLine("Hit enter key to end.");
             Console.ReadLine();
@@ -106,29 +149,77 @@ namespace DBMigration.ConsoleApp
 
                 }
                 Console.WriteLine("Params read from file.");
+                Trace.WriteLine("Params read from file.");
                 return true;
             }
             catch (Exception ex)
             {
                 //TODO: implement desired error handling
-                Trace.WriteLine("Step 0 Error: " + ex.Message);
-                Console.WriteLine("Step 0 Error: " + ex.Message);
+                Trace.WriteLine("LoadParameters Error: " + ex.Message);
+                Console.WriteLine("LoadParameters Error: " + ex.Message);
                 return false;
             }
         }
 
-        private static bool InsertUpgradeScripts()
+        private static bool UpdateUpgradeObjects()
+        {
+            bool result = false;
+            OracleConnection conn = new OracleConnection(connString);
+
+            // Update the packages and other db objects that are used by the upgrade process
+            // NOTE: it is critical that the ddl scripts include an "ALTER PACKAGE ... COMPILE" 
+            // statement at the end of each to avoid error in next step of process
+            try
+            {
+                // open the db connection once for all inserts
+                conn.Open();
+                // get files from the directory
+                string[] files = Directory.GetFiles(upgradePath + "\\Config\\upgrade-ddl");
+                // ensure the files are in sorted order
+                Array.Sort(files);
+
+                foreach (string fileName in files)
+                {
+                    // get the contents of the script 
+                    StreamReader file = new StreamReader(fileName);
+                    string ddl = file.ReadToEnd();
+                    // execute the ddl
+                    using (OracleCommand ddlCmd = new OracleCommand(ddl, conn))
+                    {
+                        ddlCmd.ExecuteNonQuery();
+                    }
+                }
+                Console.WriteLine("Upgrade objects updated");
+                Trace.WriteLine("Upgrade objects updated");
+                result = true;
+            }
+            catch (Exception ex)
+            {
+                //TODO: implement desired error handling
+                Trace.WriteLine("UpdateUpgradeObjects Error: " + ex.Message);
+                Console.WriteLine("UpdateUpgradeObjects Error: " + ex.Message);
+                result = false;
+
+            }
+            finally
+            {
+                // close the connection
+                if (conn.State != ConnectionState.Closed)
+                    conn.Close();
+            }
+            return result;
+        }
+
+        private static bool InsertUpgradeCommands()
         {
             bool result = false;
             OracleConnection conn = new OracleConnection(connString);
 
             try
             {
-                // update the utility package used for script inserts
-                //TODO: add the logic to load this script from the config folder and execute on the target database
-
                 // prepare the upgrade command table
                 //TODO: ensure it is correct to truncate these tables prior to inserting new commands
+                //TODO: refactor executing a simple sql command
                 conn.Open();
                 using (OracleCommand truncateCmd = new OracleCommand("truncate table rt_upgrade_command", conn))
                 {
@@ -137,6 +228,7 @@ namespace DBMigration.ConsoleApp
                 conn.Close();
 
                 // get the directories
+                // TODO: refactor getting sorted files from a directory and getting sorted numeric directories
                 string[] upgradeFolders = System.IO.Directory.GetDirectories(upgradePath, "*", System.IO.SearchOption.TopDirectoryOnly);
                 //load the directories into a sorted list
                 SortedDictionary<int, string> sortedFolders = new SortedDictionary<int, string>();
@@ -167,7 +259,7 @@ namespace DBMigration.ConsoleApp
                         string[] files = Directory.GetFiles(folder);
                         // ensure the files are in sorted order
                         Array.Sort(files);
-                        // sort the array to ensure this occurs in order
+
                         foreach (string fileName in files)
                         {
                             // get the contents of the script 
@@ -204,6 +296,8 @@ namespace DBMigration.ConsoleApp
                             }
                         }
                     }
+                    Console.WriteLine("Upgrade commands inserted");
+                    Trace.WriteLine("Upgrade commands inserted");
                     result = true;
                 }
 
@@ -211,8 +305,8 @@ namespace DBMigration.ConsoleApp
             catch (Exception ex)
             {
                 //TODO: implement desired error handling
-                Trace.WriteLine("Step 1 Error: " + ex.Message);
-                Console.WriteLine("Step 1 Error: " + ex.Message);
+                Trace.WriteLine("InsertUpgradeCommands Error: " + ex.Message);
+                Console.WriteLine("InsertUpgradeCommands Error: " + ex.Message);
                 result = false;
             }
             finally
