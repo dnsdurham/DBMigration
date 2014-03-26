@@ -117,6 +117,8 @@ namespace DBMigration.ConsoleApp
             Console.ReadLine();
         }
 
+        #region DB Migration Methods
+        
         private static bool LoadParameters()
         {
             // find the upgrade directory in the source directory
@@ -173,10 +175,7 @@ namespace DBMigration.ConsoleApp
             {
                 // open the db connection once for all inserts
                 conn.Open();
-                // get files from the directory
-                string[] files = Directory.GetFiles(upgradePath + "\\Config\\upgrade-ddl");
-                // ensure the files are in sorted order
-                Array.Sort(files);
+                string[] files = GetSortedFilenamesFromDirectory(upgradePath + "\\Config\\upgrade-ddl");
 
                 foreach (string fileName in files)
                 {
@@ -227,22 +226,7 @@ namespace DBMigration.ConsoleApp
                 }
                 conn.Close();
 
-                // get the directories
-                // TODO: refactor getting sorted files from a directory and getting sorted numeric directories
-                string[] upgradeFolders = System.IO.Directory.GetDirectories(upgradePath, "*", System.IO.SearchOption.TopDirectoryOnly);
-                //load the directories into a sorted list
-                SortedDictionary<int, string> sortedFolders = new SortedDictionary<int, string>();
-                foreach (var dir in upgradeFolders)
-                {
-                    int dirId;
-                    // get just the last directory name
-                    string folderName = dir.Substring(dir.Length - 3, 3);
-                    if (Int32.TryParse(folderName, out dirId))
-                    {
-                        sortedFolders.Add(dirId, dir);
-                    }
-
-                }
+                SortedDictionary<int, string> sortedFolders = GetSortedFolderNamesFromDirectory(upgradePath, "*", true);
 
                 if (sortedFolders.Count > 0)
                 {
@@ -318,5 +302,40 @@ namespace DBMigration.ConsoleApp
             return result;
         }
 
+        #endregion
+
+        #region Utilities
+
+        private static SortedDictionary<int, string> GetSortedFolderNamesFromDirectory(string path, string wildcard, bool NumericOnly)
+        {
+            // get the directories
+            // TODO: refactor getting sorted files from a directory and getting sorted numeric directories
+            string[] folders = System.IO.Directory.GetDirectories(path, wildcard, System.IO.SearchOption.TopDirectoryOnly);
+            //load the directories into a sorted list
+            SortedDictionary<int, string> sortedFolders = new SortedDictionary<int, string>();
+            foreach (var dir in folders)
+            {
+                int dirId;
+                // get just the last directory name
+                string folderName = dir.Substring(dir.Length - 3, 3);
+                if (Int32.TryParse(folderName, out dirId))
+                {
+                    sortedFolders.Add(dirId, dir);
+                }
+
+            }
+            return sortedFolders;
+        }
+
+        private static string[] GetSortedFilenamesFromDirectory(string path)
+        {
+            // get files from the directory
+            string[] files = Directory.GetFiles(path);
+            // ensure the files are in sorted order
+            Array.Sort(files);
+            return files;
+        }
+
+        #endregion
     }
 }
