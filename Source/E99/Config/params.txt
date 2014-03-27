@@ -1,3 +1,2 @@
-poop = blah
-this is a bad line
-blah=poop
+VersionFrom=E05
+VersionTo=E06

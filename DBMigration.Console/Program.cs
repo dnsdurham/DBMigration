@@ -81,8 +81,12 @@ namespace DBMigration.ConsoleApp
             // Step 2: Create the Export
             if (stepSuccess == true)
             {
-                Console.WriteLine(CmdLineWrapper.RunCmdLine("blah=poop poop=blah"));
+                Console.WriteLine("Step 2: Create the export");
                 Trace.WriteLine("Step 2: Create the export");
+                //TODO: replace the arguments with the correct list for a migration export
+                string expArgs = string.Format("upgtest/dang3r dumpfile=EXP_{0}_{1}.dmp logfile=EXP_{0}_{1}.log reuse_dimpfiles=y schemas=upgtest", parameters["VersionFrom"], parameters["VersionTo"]);
+                string expResult = CmdLineWrapper.RunCmdLine("expdp.exe", expArgs);
+                Console.WriteLine("Export Result: " + expResult);
                 stepSuccess = false; // reset the step success
             }
 
@@ -122,6 +126,10 @@ namespace DBMigration.ConsoleApp
         private static bool LoadParameters()
         {
             // find the upgrade directory in the source directory
+            // Here is the list of parameters in the params.txt file:
+            // VersionFrom
+            // VersionTo
+
             try
             {
                 string[] folders = System.IO.Directory.GetDirectories(sourcePath, "E*", System.IO.SearchOption.TopDirectoryOnly);
