@@ -69,6 +69,24 @@ namespace DBMigration.ConsoleApp
             // Step 1e: Prepare the CLR assemblies
             if (stepSuccess == true)
             {
+                //TODO: Answer the CLR questions
+                // Assets involved:
+                //  CLR source code
+                //  Compiled CLR Assemblies
+                //  Lynx.CSharpDeploy Java source code
+                //  Lynx.CSharpDeploy compiled Java class in DB
+                //  Lynx.Store_Clr_Dlls procedure in DB
+                //  Lynx.Deploy_Clr_Dlls procedure in DB
+                //  Lynx.RT_Clr_Assemblies table in DB
+                //  Lynx.Clr_Assemblies view in DB
+                // CLR Questions:
+                //  How do the CLR assemblies currently get to the \bin directory on the db server?
+                //  How is the build process for CLR assemblies ucrrently managed?
+                //  How often are these CRL assemblies updated?
+                //  Can these CLR assemblies be stored on a shared drive and referenced there during upgrade prep?
+                //  How do the Java class in CSharpDeploy get source control managed?
+                //  How often are these Java classes updated?
+                //  What is the build process for deploying the Java class to the DB and how does this integrate with the build automation
                 stepSuccess = false; // reset the step success
 
                 stepSuccess = true; // replace with method call
@@ -232,6 +250,7 @@ namespace DBMigration.ConsoleApp
                 // prepare the upgrade command table
                 //TODO: ensure it is correct to truncate these tables prior to inserting new commands
                 //TODO: refactor executing a simple sql command
+                //TODO: Figure out a way to combine related scripts into a single source file and then split the commands and execute sequentially
                 conn.Open();
                 using (OracleCommand truncateCmd = new OracleCommand("truncate table rt_upgrade_command", conn))
                 {

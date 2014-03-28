@@ -1,4 +1,4 @@
 DBMigration
 ===========
 
-Prototype of an Oracel database migration utility
+Prototype of an Oracle database migration utility
