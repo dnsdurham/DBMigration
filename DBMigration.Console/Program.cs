@@ -15,7 +15,7 @@ namespace DBMigration.ConsoleApp
         static string sourcePath = ConfigurationManager.AppSettings["SourcePath"];
         static string upgradePath = "";
         static Dictionary<string, string> parameters = new Dictionary<string, string>();
-        static string connString = ConfigurationManager.ConnectionStrings["UPGTest"].ConnectionString;
+        static string connString = ConfigurationManager.ConnectionStrings["UPGTest-Local"].ConnectionString;
 
         static void Main(string[] args)
         {
@@ -84,9 +84,14 @@ namespace DBMigration.ConsoleApp
                 Console.WriteLine("Step 2: Create the export");
                 Trace.WriteLine("Step 2: Create the export");
                 //TODO: replace the arguments with the correct list for a migration export
-                string expArgs = string.Format("upgtest/dang3r dumpfile=EXP_{0}_{1}.dmp logfile=EXP_{0}_{1}.log reuse_dimpfiles=y schemas=upgtest", parameters["VersionFrom"], parameters["VersionTo"]);
-                string expResult = CmdLineWrapper.RunCmdLine("expdp.exe", expArgs);
+                string expArgs = string.Format("upgtest/dang3r dumpfile=EXP_{0}_{1}.dmp logfile=EXP_{0}_{1}.log reuse_dumpfiles=y schemas=upgtest", parameters["VersionFrom"], parameters["VersionTo"]);
+                string exePath = ConfigurationManager.AppSettings["ExpExePath"];
+                Console.WriteLine("Starting export...");
+                Trace.WriteLine("Starting export...");
+                //TODO: figure out how to pump the expdp output back into the console app
+                string expResult = CmdLineWrapper.RunCmdLine(exePath + @"\expdp.exe", expArgs);
                 Console.WriteLine("Export Result: " + expResult);
+                Trace.WriteLine("Export Result: " + expResult);
                 stepSuccess = false; // reset the step success
             }
 
@@ -139,7 +144,7 @@ namespace DBMigration.ConsoleApp
                 if (folders.Length == 1) // there should only be one
                 {
                     upgradePath = folders[0];
-                    StreamReader file = new StreamReader(upgradePath + "\\Config\\params.txt");
+                    StreamReader file = new StreamReader(upgradePath + @"\Config\params.txt");
                     while ((line = file.ReadLine()) != null)
                     {
                         // process the params file and store in a dictionary
